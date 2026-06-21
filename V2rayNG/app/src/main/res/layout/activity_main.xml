@@ -108,6 +108,41 @@
                             android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layout_connect"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:paddingTop="20dp"
+                        android:paddingBottom="20dp"
+                        android:visibility="gone">
+
+                        <Button
+                            android:id="@+id/btn_connect"
+                            android:layout_width="150dp"
+                            android:layout_height="150dp"
+                            android:background="@drawable/bg_connect_circle"
+                            android:backgroundTint="@color/color_fab_inactive"
+                            android:text="⏻"
+                            android:textColor="#FFFFFF"
+                            android:textSize="46sp"
+                            android:stateListAnimator="@null" />
+
+                        <TextView
+                            android:id="@+id/tv_connect_status"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:gravity="center"
+                            android:paddingStart="24dp"
+                            android:paddingEnd="24dp"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:text="Чтобы подключиться, нажмите на кнопку.
+Сейчас отключено от сети" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <FrameLayout

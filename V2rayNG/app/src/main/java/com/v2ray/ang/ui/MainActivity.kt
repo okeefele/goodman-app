@@ -83,6 +83,8 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         binding.btnTg.setOnClickListener { openUrl("https://t.me/goodmanNet_bot") }
         binding.btnEmptyClipboard.setOnClickListener { importClipboard() }
         binding.btnEmptyQr.setOnClickListener { importQRcode() }
+        binding.btnConnect.setOnClickListener { handleFabAction() }
+        binding.fab.visibility = android.view.View.GONE
         binding.layoutTest.setOnClickListener { handleLayoutTestClick() }
 
         setupGroupTab()
@@ -105,6 +107,16 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
         binding.navView.setNavigationItemSelectedListener(this)
+        binding.navView.menu.findItem(R.id.sub_setting)?.isVisible = false
+        binding.navView.menu.findItem(R.id.routing_setting)?.isVisible = false
+        binding.navView.menu.findItem(R.id.user_asset_setting)?.isVisible = false
+        binding.navView.menu.findItem(R.id.settings)?.isVisible = false
+        binding.navView.menu.findItem(R.id.promotion)?.isVisible = false
+        binding.navView.menu.findItem(R.id.check_for_update)?.isVisible = false
+        binding.navView.menu.findItem(R.id.backup_restore)?.isVisible = false
+        binding.navView.menu.findItem(R.id.about)?.isVisible = false
+        binding.navView.menu.findItem(R.id.placeholder)?.isVisible = false
+
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -217,17 +229,23 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     private fun applyRunningState(isLoading: Boolean, isRunning: Boolean) {
         if (isLoading) {
             binding.fab.setImageResource(R.drawable.ic_fab_check)
+            binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.connect_yellow))
+            binding.tvConnectStatus.text = "Подключение…"
             return
         }
 
         if (isRunning) {
             binding.fab.setImageResource(R.drawable.ic_stop_24dp)
+            binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.connect_green))
+            binding.tvConnectStatus.text = "Подключено к сети"
             binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_active))
             binding.fab.contentDescription = getString(R.string.action_stop_service)
             setTestState(getString(R.string.connection_connected))
             binding.layoutTest.isFocusable = true
         } else {
             binding.fab.setImageResource(R.drawable.ic_play_24dp)
+            binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_inactive))
+            binding.tvConnectStatus.text = "Чтобы подключиться, нажмите на кнопку.\nСейчас отключено от сети"
             binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_inactive))
             binding.fab.contentDescription = getString(R.string.tasker_start_service)
             setTestState(getString(R.string.connection_not_connected))
@@ -254,13 +272,23 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
     private fun updateEmptyState() {
         runOnUiThread {
-            binding.layoutEmpty.visibility =
-                if (mainViewModel.serversCache.isEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+            val empty = mainViewModel.serversCache.isEmpty()
+            binding.layoutEmpty.visibility = if (empty) android.view.View.VISIBLE else android.view.View.GONE
+            binding.layoutConnect.visibility = if (empty) android.view.View.GONE else android.view.View.VISIBLE
+            binding.fab.visibility = android.view.View.GONE
+            binding.tabGroup.visibility = if (empty) android.view.View.GONE else android.view.View.VISIBLE
+            binding.viewPager.visibility = if (empty) android.view.View.GONE else android.view.View.VISIBLE
+            binding.layoutTest.visibility = if (empty) android.view.View.GONE else android.view.View.VISIBLE
+            invalidateOptionsMenu()
         }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
+        val hasConfig = mainViewModel.serversCache.isNotEmpty()
+        menu.findItem(R.id.add_config)?.isVisible = hasConfig
+        menu.findItem(R.id.service_restart)?.isVisible = hasConfig
+        menu.findItem(R.id.del_all_config)?.isVisible = hasConfig
 
         val searchItem = menu.findItem(R.id.search_view)
         if (searchItem != null) {
@@ -688,6 +716,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         // Handle navigation view item clicks here.
         when (item.itemId) {
             R.id.sub_setting -> requestActivityLauncher.launch(Intent(this, SubSettingActivity::class.java))
+            R.id.kill_switch -> try { startActivity(Intent(android.provider.Settings.ACTION_VPN_SETTINGS)) } catch (e: Exception) { startActivity(Intent(android.provider.Settings.ACTION_SETTINGS)) }
             R.id.per_app_proxy_settings -> requestActivityLauncher.launch(Intent(this, PerAppProxyActivity::class.java))
             R.id.routing_setting -> requestActivityLauncher.launch(Intent(this, RoutingSettingActivity::class.java))
             R.id.user_asset_setting -> requestActivityLauncher.launch(Intent(this, UserAssetActivity::class.java))
