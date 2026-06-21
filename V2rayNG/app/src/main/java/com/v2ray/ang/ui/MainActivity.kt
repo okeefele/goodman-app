@@ -79,12 +79,16 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         setupNavigationDrawer()
 
         binding.fab.setOnClickListener { handleFabAction() }
+        binding.btnLk.setOnClickListener { openUrl("https://gdman.ink") }
+        binding.btnTg.setOnClickListener { openUrl("https://t.me/goodmanNet_bot") }
+        binding.btnEmptyClipboard.setOnClickListener { importClipboard() }
+        binding.btnEmptyQr.setOnClickListener { importQRcode() }
         binding.layoutTest.setOnClickListener { handleLayoutTestClick() }
 
         setupGroupTab()
         setupViewModel()
         SubscriptionUpdater.sync()
-        mainViewModel.reloadServerList()
+        mainViewModel.reloadServerList(); updateEmptyState()
 
         checkAndRequestPermission(PermissionType.POST_NOTIFICATIONS) {
         }
@@ -233,10 +237,26 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
     override fun onResume() {
         super.onResume()
+        updateEmptyState()
     }
 
     override fun onPause() {
         super.onPause()
+    }
+
+    private fun openUrl(url: String) {
+        try {
+            startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)))
+        } catch (e: Exception) {
+            toast(getString(R.string.toast_failure))
+        }
+    }
+
+    private fun updateEmptyState() {
+        runOnUiThread {
+            binding.layoutEmpty.visibility =
+                if (mainViewModel.serversCache.isEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -438,7 +458,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                     when {
                         count > 0 -> {
                             toast(getString(R.string.title_import_config_count, count))
-                            mainViewModel.reloadServerList()
+                            mainViewModel.reloadServerList(); updateEmptyState()
                             refreshGroupTabTitles()
                         }
 
@@ -494,7 +514,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                     )
                 }
                 if (result.configCount > 0) {
-                    mainViewModel.reloadServerList()
+                    mainViewModel.reloadServerList(); updateEmptyState()
                     refreshGroupTabTitles()
                 }
                 hideLoading()
@@ -524,7 +544,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 lifecycleScope.launch(Dispatchers.IO) {
                     val ret = mainViewModel.removeAllServer()
                     launch(Dispatchers.Main) {
-                        mainViewModel.reloadServerList()
+                        mainViewModel.reloadServerList(); updateEmptyState()
                         refreshGroupTabTitles()
                         toast(getString(R.string.title_del_config_count, ret))
                         hideLoading()
@@ -544,7 +564,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 lifecycleScope.launch(Dispatchers.IO) {
                     val ret = mainViewModel.removeDuplicateServer()
                     launch(Dispatchers.Main) {
-                        mainViewModel.reloadServerList()
+                        mainViewModel.reloadServerList(); updateEmptyState()
                         refreshGroupTabTitles()
                         toast(getString(R.string.title_del_duplicate_config_count, ret))
                         hideLoading()
@@ -564,7 +584,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 lifecycleScope.launch(Dispatchers.IO) {
                     val ret = mainViewModel.removeInvalidServer()
                     launch(Dispatchers.Main) {
-                        mainViewModel.reloadServerList()
+                        mainViewModel.reloadServerList(); updateEmptyState()
                         refreshGroupTabTitles()
                         toast(getString(R.string.title_del_config_count, ret))
                         hideLoading()
@@ -582,7 +602,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         lifecycleScope.launch(Dispatchers.IO) {
             mainViewModel.sortByTestResults()
             launch(Dispatchers.Main) {
-                mainViewModel.reloadServerList()
+                mainViewModel.reloadServerList(); updateEmptyState()
                 hideLoading()
             }
         }

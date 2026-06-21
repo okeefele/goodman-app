@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ID убранных из menu_main пунктов — объявлены, чтобы ссылки в MainActivity компилировались
+         (ветки when становятся неактивными, т.к. пунктов в меню больше нет). -->
+    <item name="search_view" type="id" />
+    <item name="import_local" type="id" />
+    <item name="import_manually_policy_group" type="id" />
+    <item name="import_manually_proxy_chain" type="id" />
+    <item name="import_manually_vmess" type="id" />
+    <item name="import_manually_vless" type="id" />
+    <item name="import_manually_ss" type="id" />
+    <item name="import_manually_socks" type="id" />
+    <item name="import_manually_http" type="id" />
+    <item name="import_manually_trojan" type="id" />
+    <item name="import_manually_wireguard" type="id" />
+    <item name="import_manually_hysteria2" type="id" />
+    <item name="export_all" type="id" />
+    <item name="real_ping_all" type="id" />
+    <item name="del_duplicate_config" type="id" />
+    <item name="del_invalid_config" type="id" />
+    <item name="sort_by_test_results" type="id" />
+    <item name="sub_update" type="id" />
+    <item name="locate_selected_config" type="id" />
+</resources>
