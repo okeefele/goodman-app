@@ -42,7 +42,7 @@
         <item
             android:id="@+id/check_for_update"
             android:icon="@drawable/ic_check_update_24dp"
-            android:title="@string/update_check_for_update" />
+            android:title="Обновить приложение" />
         <item
             android:id="@+id/backup_restore"
             android:icon="@drawable/ic_restore_24dp"

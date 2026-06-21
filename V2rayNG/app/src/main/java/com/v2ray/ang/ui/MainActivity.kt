@@ -84,6 +84,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         binding.btnEmptyClipboard.setOnClickListener { importClipboard() }
         binding.btnEmptyQr.setOnClickListener { importQRcode() }
         binding.btnConnect.setOnClickListener { handleFabAction() }
+        binding.btnRefreshSub.setOnClickListener { importConfigViaSub() }
         binding.fab.visibility = android.view.View.GONE
         binding.layoutTest.setOnClickListener { handleLayoutTestClick() }
 
@@ -112,7 +113,6 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         binding.navView.menu.findItem(R.id.user_asset_setting)?.isVisible = false
         binding.navView.menu.findItem(R.id.settings)?.isVisible = false
         binding.navView.menu.findItem(R.id.promotion)?.isVisible = false
-        binding.navView.menu.findItem(R.id.check_for_update)?.isVisible = false
         binding.navView.menu.findItem(R.id.backup_restore)?.isVisible = false
         binding.navView.menu.findItem(R.id.about)?.isVisible = false
         binding.navView.menu.findItem(R.id.placeholder)?.isVisible = false
@@ -237,7 +237,10 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         if (isRunning) {
             binding.fab.setImageResource(R.drawable.ic_stop_24dp)
             binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.connect_green))
-            binding.tvConnectStatus.text = "Подключено к сети"
+            val activeName = mainViewModel.serversCache.firstOrNull { it.guid == MmkvManager.getSelectServer() }?.profile?.remarks
+            binding.tvConnectStatus.text =
+                if (!activeName.isNullOrBlank()) "✅ GoodMan Net — подключено\n$activeName"
+                else "✅ GoodMan Net — подключено"
             binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_active))
             binding.fab.contentDescription = getString(R.string.action_stop_service)
             setTestState(getString(R.string.connection_connected))
