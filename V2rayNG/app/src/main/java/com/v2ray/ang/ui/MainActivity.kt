@@ -40,6 +40,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.v2ray.ang.dto.GmSubInfo
+import com.v2ray.ang.dto.UrlContentRequest
+import com.v2ray.ang.util.HttpUtil
+import com.v2ray.ang.util.JsonUtil
 
 class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     private val binding by lazy {
@@ -85,6 +89,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         binding.btnEmptyQr.setOnClickListener { importQRcode() }
         binding.btnConnect.setOnClickListener { handleFabAction() }
         binding.btnRefreshSub.setOnClickListener { importConfigViaSub() }
+        binding.btnSpeedtest.setOnClickListener { mainViewModel.testCurrentServerRealPing() }
         binding.fab.visibility = android.view.View.GONE
         binding.layoutTest.setOnClickListener { handleLayoutTestClick() }
 
@@ -267,7 +272,53 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     override fun onResume() {
         super.onResume()
         updateEmptyState()
+        loadSubInfo()
     }
+
+    /** Тянет данные нашей подписки (/sinfo) и рисует панель: ID, срок, устройства, Plus. */
+    private fun loadSubInfo() {
+        val sub = MmkvManager.decodeSubscriptions().firstOrNull {
+            it.subscription.url.contains("gdman.ink") && it.subscription.url.contains("/s/")
+        }
+        val token = sub?.subscription?.url
+            ?.substringAfterLast("/s/")?.substringBefore("?")?.substringBefore("/")?.trim()
+        if (token.isNullOrBlank()) {
+            binding.layoutSubinfo.visibility = android.view.View.GONE
+            return
+        }
+        lifecycleScope.launch(Dispatchers.IO) {
+            val resp = try {
+                HttpUtil.getUrlContent(UrlContentRequest(url = "https://gdman.ink/sinfo/$token", timeout = 6000))
+            } catch (e: Exception) {
+                null
+            }
+            val info = resp?.let { JsonUtil.fromJsonSafe(it, GmSubInfo::class.java) }
+            launch(Dispatchers.Main) {
+                if (info == null || !info.ok) {
+                    binding.layoutSubinfo.visibility = android.view.View.GONE
+                    return@launch
+                }
+                val pretty = info.account_id_pretty ?: info.account_id ?: ""
+                if (pretty.isNotBlank()) supportActionBar?.title = "ID: $pretty"
+                binding.tvSubAccount.text = "🆔 $pretty"
+                binding.tvSubExpiry.text =
+                    if (info.active && !info.expires_at.isNullOrBlank()) "📅 Подписка до ${gmFmtDate(info.expires_at)}"
+                    else "📅 Подписка неактивна"
+                binding.tvSubDevices.text = "📱 Устройства: ${info.devices_used} из ${info.devices_limit}"
+                binding.tvSubPlus.text = "⚡ Plus: ${gmFmtGb(info.plus_used)} / ${gmFmtGb(info.plus_limit)} ГБ"
+                binding.layoutSubinfo.visibility = android.view.View.VISIBLE
+            }
+        }
+    }
+
+    private fun gmFmtDate(iso: String): String = try {
+        val d = iso.substring(0, 10).split("-")
+        "${d[2]}.${d[1]}.${d[0]}"
+    } catch (e: Exception) {
+        iso
+    }
+
+    private fun gmFmtGb(bytes: Long): String = String.format("%.1f", bytes / 1024.0 / 1024.0 / 1024.0)
 
     override fun onPause() {
         super.onPause()
