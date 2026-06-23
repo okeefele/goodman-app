@@ -77,6 +77,27 @@ object SettingsManager {
     }
 
     /**
+     * GoodMan: гарантирует, что RU-домены и RU-IP идут НАПРЯМУЮ (мимо VPN) — обход РФ.
+     * Идемпотентно: если правила уже есть, ничего не делает. Вставляет их в начало (приоритет выше proxy).
+     */
+    fun ensureRussiaBypass(context: Context) {
+        var list = MmkvManager.decodeRoutingRulesets()
+        if (list.isNullOrEmpty()) list = getPresetRoutingRulesets(context, 0) ?: mutableListOf()
+        val hasRuDomain = list.any { r -> r.domain?.any { it.contains("category-ru") } == true }
+        val hasRuIp = list.any { r -> r.ip?.any { it.equals("geoip:ru", true) } == true }
+        if (hasRuDomain && hasRuIp) return
+        val additions = mutableListOf<RulesetItem>()
+        if (!hasRuDomain) additions.add(
+            RulesetItem(remarks = "Bypass Russia domains", outboundTag = "direct", domain = listOf("geosite:category-ru"))
+        )
+        if (!hasRuIp) additions.add(
+            RulesetItem(remarks = "Bypass Russia IP", outboundTag = "direct", ip = listOf("geoip:ru"))
+        )
+        list.addAll(0, additions)
+        MmkvManager.encodeRoutingRulesets(list)
+    }
+
+    /**
      * Reset routing rulesets from presets.
      * @param context The application context.
      * @param index The index of the routing type.

@@ -71,6 +71,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        SettingsManager.ensureRussiaBypass(this)   // RU-домены/IP → напрямую (обход РФ)
         setContentView(binding.root)
         setupToolbar(binding.toolbar, false, getString(R.string.app_name))
 
@@ -549,12 +550,32 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         return true
     }
 
+    /** Happ-деплинки (наши QR): happ://add/<ссылка> и happ://install-config?url=<ссылка> → достаём подписку/конфиг. */
+    private fun normalizeImport(s: String?): String? {
+        var v = s?.trim() ?: return s
+        when {
+            v.startsWith("happ://add/") -> v = v.removePrefix("happ://add/").trim()
+            v.startsWith("happ://install-config") -> {
+                val idx = v.indexOf("url=")
+                if (idx >= 0) {
+                    v = try {
+                        java.net.URLDecoder.decode(v.substring(idx + 4), "UTF-8")
+                    } catch (e: Exception) {
+                        v.substring(idx + 4)
+                    }
+                }
+            }
+        }
+        return v
+    }
+
     private fun importBatchConfig(server: String?) {
+        val normalized = normalizeImport(server)
         showLoading()
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val (count, countSub) = AngConfigManager.importBatchConfig(server, mainViewModel.subscriptionId, true)
+                val (count, countSub) = AngConfigManager.importBatchConfig(normalized, mainViewModel.subscriptionId, true)
                 delay(500L)
                 withContext(Dispatchers.Main) {
                     when {

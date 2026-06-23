@@ -27,9 +27,8 @@ class ScannerActivity : HelperBaseActivity() {
 
         setContentViewWithToolbar(binding.root, showHomeAsUp = true, title = getString(R.string.menu_item_import_config_qrcode))
 
-        if (MmkvManager.decodeSettingsBool(AppConfig.PREF_START_SCAN_IMMEDIATE)) {
-            launchScan()
-        }
+        // Сразу открываем камеру при входе на экран скана (камера-разрешение уже выдано до запуска активности).
+        launchScan()
     }
 
     private fun launchScan() {
