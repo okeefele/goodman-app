@@ -12,8 +12,8 @@ android {
         applicationId = "ink.gdman.app"
         minSdk = 24
         targetSdk = 37
-        versionCode = 740
-        versionName = "2.3.4"
+        versionCode = 741
+        versionName = "2.3.5"
         multiDexEnabled = true
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
@@ -36,6 +36,18 @@ android {
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        // Фиксированный debug-ключ (в репо) — чтобы ВСЕ CI-сборки имели одну подпись
+        // и обновления ставились поверх (иначе Android отклоняет апдейт: разная подпись).
+        getByName("debug") {
+            storeFile = file("goodman-debug.p12")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+            storeType = "PKCS12"
+        }
     }
 
     buildTypes {
