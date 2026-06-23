@@ -68,7 +68,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        setupToolbar(binding.toolbar, false, getString(R.string.title_server))
+        setupToolbar(binding.toolbar, false, getString(R.string.app_name))
 
         // setup viewpager and tablayout
         groupPagerAdapter = GroupPagerAdapter(this, emptyList())
@@ -135,6 +135,13 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         mainViewModel.updateTestResultAction.observe(this) { setTestState(it) }
         mainViewModel.isRunning.observe(this) { isRunning ->
             applyRunningState(false, isRunning)
+        }
+        mainViewModel.startFailure.observe(this) { failed ->
+            if (failed == true) {
+                binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.connect_red))
+                binding.tvConnectStatus.text = "❌ Ошибка подключения.\nПопробуйте ещё раз или смените сервер"
+                mainViewModel.startFailure.value = false
+            }
         }
         mainViewModel.startListenBroadcast()
         mainViewModel.initAssets(assets)
@@ -237,10 +244,11 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         if (isRunning) {
             binding.fab.setImageResource(R.drawable.ic_stop_24dp)
             binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.connect_green))
-            val activeName = mainViewModel.serversCache.firstOrNull { it.guid == MmkvManager.getSelectServer() }?.profile?.remarks
-            binding.tvConnectStatus.text =
-                if (!activeName.isNullOrBlank()) "✅ GoodMan Net — подключено\n$activeName"
-                else "✅ GoodMan Net — подключено"
+            val active = mainViewModel.serversCache.firstOrNull { it.guid == MmkvManager.getSelectServer() }
+            val sb = StringBuilder("✅ GoodMan Net — подключено")
+            active?.profile?.remarks?.takeIf { it.isNotBlank() }?.let { sb.append("\n").append(it) }
+            active?.profile?.server?.takeIf { it.isNotBlank() }?.let { sb.append("\nIP: ").append(it) }
+            binding.tvConnectStatus.text = sb.toString()
             binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_active))
             binding.fab.contentDescription = getString(R.string.action_stop_service)
             setTestState(getString(R.string.connection_connected))

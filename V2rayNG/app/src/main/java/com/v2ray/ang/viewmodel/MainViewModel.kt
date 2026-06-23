@@ -40,6 +40,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var keywordFilter = ""
     val serversCache = mutableListOf<ServersCache>()
     val isRunning by lazy { MutableLiveData<Boolean>() }
+    val startFailure by lazy { MutableLiveData<Boolean>() }
     val updateListAction by lazy { MutableLiveData<Int>() }
     val updateTestResultAction by lazy { MutableLiveData<String>() }
 
@@ -443,6 +444,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         getApplication<AngApplication>().toastError(R.string.toast_services_failure)
                     }
                     isRunning.value = false
+                    startFailure.value = true
                 }
 
                 AppConfig.MSG_STATE_STOP_SUCCESS -> {
