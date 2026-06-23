@@ -585,7 +585,12 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                             refreshGroupTabTitles()
                         }
 
-                        countSub > 0 -> setupGroupTab()
+                        countSub > 0 -> {
+                            setupGroupTab()
+                            mainViewModel.reloadServerList(); updateEmptyState()
+                            refreshGroupTabTitles()
+                        }
+
                         else -> toastError(R.string.toast_failure)
                     }
                     hideLoading()
