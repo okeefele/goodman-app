@@ -94,14 +94,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         binding.switchKillswitch.isChecked = MmkvManager.decodeSettingsBool("gm_killswitch", false)
         binding.switchKillswitch.setOnCheckedChangeListener { _, isChecked ->
             MmkvManager.encodeSettings("gm_killswitch", isChecked)
-            if (isChecked) {
-                toast("Включите «Постоянная VPN» и «Блокировать соединения без VPN»")
-                try {
-                    startActivity(android.content.Intent(android.provider.Settings.ACTION_VPN_SETTINGS))
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
+            if (isChecked) showKillSwitchDialog()
         }
         binding.fab.visibility = android.view.View.GONE
         binding.layoutTest.setOnClickListener { handleLayoutTestClick() }
@@ -263,10 +256,10 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             binding.fab.setImageResource(R.drawable.ic_stop_24dp)
             binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.connect_green))
             val active = mainViewModel.serversCache.firstOrNull { it.guid == MmkvManager.getSelectServer() }
-            val sb = StringBuilder("✅ GoodMan Net — подключено")
-            active?.profile?.remarks?.takeIf { it.isNotBlank() }?.let { sb.append("\n").append(it) }
-            active?.profile?.server?.takeIf { it.isNotBlank() }?.let { sb.append("\nIP: ").append(it) }
-            binding.tvConnectStatus.text = sb.toString()
+            val name = active?.profile?.remarks?.takeIf { it.isNotBlank() }
+            binding.tvConnectStatus.text =
+                if (name != null) "✅ GoodMan Net — подключено\n$name" else "✅ GoodMan Net — подключено"
+            fetchExitGeo()   // реальный exit-IP + флаг страны (через VPN)
             binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_active))
             binding.fab.contentDescription = getString(R.string.action_stop_service)
             setTestState(getString(R.string.connection_connected))
@@ -280,6 +273,66 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             setTestState(getString(R.string.connection_not_connected))
             binding.layoutTest.isFocusable = false
         }
+    }
+
+    /** Узнаёт реальный исходящий IP (через VPN) и страну → рисует флаг под зелёной кнопкой. */
+    private fun fetchExitGeo() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            delay(1200)   // даём туннелю подняться
+            val resp = try {
+                HttpUtil.getUrlContent(UrlContentRequest(url = "https://ipwho.is/", timeout = 6000))
+            } catch (e: Exception) {
+                null
+            } ?: return@launch
+            try {
+                val o = org.json.JSONObject(resp)
+                if (!o.optBoolean("success", true)) return@launch
+                val ip = o.optString("ip")
+                val cc = o.optString("country_code")
+                val country = o.optString("country")
+                val flag = gmFlag(cc)
+                withContext(Dispatchers.Main) {
+                    if (mainViewModel.isRunning.value == true) {
+                        val nm = mainViewModel.serversCache.firstOrNull { it.guid == MmkvManager.getSelectServer() }?.profile?.remarks
+                        val sb = StringBuilder("✅ GoodMan Net — подключено")
+                        if (!nm.isNullOrBlank()) sb.append("\n").append(nm)
+                        sb.append("\n").append(flag).append(" ").append(country).append(" · ").append(ip)
+                        binding.tvConnectStatus.text = sb.toString()
+                    }
+                }
+            } catch (e: Exception) {
+                // оставляем имя сервера, если гео не получили
+            }
+        }
+    }
+
+    private fun gmFlag(cc: String?): String {
+        val c = cc?.uppercase() ?: ""
+        if (c.length != 2 || !c.all { it in 'A'..'Z' }) return "🌍"
+        val base = 0x1F1E6
+        return String(Character.toChars(base + (c[0] - 'A'))) + String(Character.toChars(base + (c[1] - 'A')))
+    }
+
+    private fun showKillSwitchDialog() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("🛡 Kill switch")
+            .setMessage(
+                "Чтобы при обрыве VPN интернет полностью блокировался и ваш реальный IP не утёк:\n\n" +
+                    "1. Откройте настройки VPN\n" +
+                    "2. Нажмите ⚙️ напротив «GoodMan Net»\n" +
+                    "3. Включите «Постоянная VPN»\n" +
+                    "4. Включите «Блокировать соединения без VPN»\n\n" +
+                    "Это системная настройка Android — включается один раз."
+            )
+            .setPositiveButton("Открыть настройки") { _, _ ->
+                try {
+                    startActivity(android.content.Intent(android.provider.Settings.ACTION_VPN_SETTINGS))
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            .setNegativeButton("Позже", null)
+            .show()
     }
 
     override fun onResume() {

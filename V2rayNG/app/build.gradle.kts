@@ -12,8 +12,8 @@ android {
         applicationId = "ink.gdman.app"
         minSdk = 24
         targetSdk = 37
-        versionCode = 742
-        versionName = "2.3.6"
+        versionCode = 743
+        versionName = "2.3.7"
         multiDexEnabled = true
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
