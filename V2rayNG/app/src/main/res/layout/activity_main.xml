@@ -220,6 +220,26 @@
                                 android:textSize="11sp"
                                 android:textColor="@color/color_fab_inactive" />
                         </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:orientation="horizontal"
+                            android:gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🛡 Kill switch (блокировать сеть без VPN)"
+                                android:textSize="13sp" />
+
+                            <androidx.appcompat.widget.SwitchCompat
+                                android:id="@+id/switch_killswitch"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp" />
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
 

@@ -1,7 +1,13 @@
 package com.v2ray.ang.ui
 
 import android.annotation.SuppressLint
+import android.app.AppOpsManager
+import android.app.usage.UsageStatsManager
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.os.Process
+import android.provider.Settings
 import android.text.TextUtils
 import android.view.Menu
 import android.view.MenuItem
@@ -37,7 +43,24 @@ class PerAppProxyActivity : BaseActivity() {
 
     private var adapter: PerAppProxyAdapter? = null
     private var appsAll: List<AppInfo>? = null
+    private var sortByUsage = false
     private val viewModel: PerAppProxyViewModel by viewModels()
+
+    // Курируемый набор RU-приложений (банки/госуслуги/маркетплейсы/операторы) — идут МИМО VPN.
+    private val ruPreset = listOf(
+        "ru.sberbankmobile", "com.idamob.tinkoff.android", "ru.vtb24.mobilebanking.android",
+        "ru.alfabank.mobile.android", "ru.gazprombank.android.mobilebank.app", "ru.raiffeisennews",
+        "ru.nspk.mirpay", "ru.nspk.sbpay",
+        "ru.rostel", "ru.gosuslugi.goskey", "ru.gosuslugi.app", "ru.rosreestr.mobile", "com.gnivts.selfemployed", "ru.mos.app",
+        "ru.ozon.app.android", "com.wildberries.ru", "ru.beru.android", "com.avito.android",
+        "ru.yandex.taxi", "ru.sbcs.store", "ru.foodfox.client", "ru.vkusvill", "ru.tander.magnit", "ru.perekrestok.app",
+        "ru.yandex.yandexmaps", "ru.yandex.yandexnavi", "ru.dublgis.dgismobile",
+        "ru.urentbike.app", "ru.cian.main", "ru.oneme.app",
+        "ru.yandex.music", "ru.kinopoisk", "ru.yandex.disk", "ru.yandex.mail", "ru.yandex.weatherplugin",
+        "ru.yandex.translate", "ru.yandex.taximeter", "ru.yandex.direct",
+        "ru.mts.mymts", "ru.megafon.mlk", "ru.beeline.services", "ru.tele2.mytele2", "ru.yota.android",
+        "ru.vk.store"
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +84,75 @@ class PerAppProxyActivity : BaseActivity() {
         binding.layoutSwitchBypassAppsTips.setOnClickListener {
             Toasty.info(this, R.string.summary_pref_per_app_proxy, Toast.LENGTH_LONG, true).show()
         }
+
+        binding.switchShowSystem.setOnCheckedChangeListener { _, _ -> applyFilterSort() }
+
+        binding.btnPresetRu.setOnClickListener {
+            binding.switchPerAppProxy.isChecked = true   // включаем per-app
+            binding.switchBypassApps.isChecked = true    // режим «обход» (выбранные мимо VPN)
+            viewModel.addAll(ruPreset)
+            toast("RU-приложения добавлены в обход VPN")
+            applyFilterSort()
+        }
+
+        binding.btnSortUsage.setOnClickListener {
+            if (hasUsageAccess()) {
+                sortByUsage = true
+                applyFilterSort()
+            } else {
+                toast("Разрешите доступ к статистике использования и повторите")
+                try {
+                    startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                } catch (e: Exception) {
+                    LogUtil.e(ANG_PACKAGE, "usage access settings", e)
+                }
+            }
+        }
+    }
+
+    /** Перестраивает список: фильтр системных + сортировка (выбранные сверху, затем частота/имя). */
+    private fun applyFilterSort() {
+        val all = appsAll ?: return
+        val showSystem = binding.switchShowSystem.isChecked
+        val sel = viewModel.getAll()
+        val list = all.filter { showSystem || !it.isSystemApp }
+        list.forEach { it.isSelected = if (sel.contains(it.packageName)) 1 else 0 }
+        val usage = if (sortByUsage) getUsageMap() else emptyMap()
+        val sorted = if (sortByUsage) {
+            list.sortedWith(
+                compareByDescending<AppInfo> { it.isSelected }
+                    .thenByDescending { usage[it.packageName] ?: 0L }
+                    .thenBy { it.appName.lowercase() })
+        } else {
+            list.sortedWith(
+                compareByDescending<AppInfo> { it.isSelected }
+                    .thenBy { it.appName.lowercase() })
+        }
+        adapter = PerAppProxyAdapter(sorted, viewModel)
+        binding.recyclerView.adapter = adapter
+    }
+
+    private fun hasUsageAccess(): Boolean = try {
+        val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        @Suppress("DEPRECATION")
+        val mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), packageName)
+        mode == AppOpsManager.MODE_ALLOWED
+    } catch (e: Exception) {
+        false
+    }
+
+    private fun getUsageMap(): Map<String, Long> = try {
+        val usm = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val end = System.currentTimeMillis()
+        val begin = end - 30L * 24 * 60 * 60 * 1000
+        val map = HashMap<String, Long>()
+        usm.queryUsageStats(UsageStatsManager.INTERVAL_BEST, begin, end)?.forEach {
+            val prev = map[it.packageName] ?: 0L
+            if (it.lastTimeUsed > prev) map[it.packageName] = it.lastTimeUsed
+        }
+        map
+    } catch (e: Exception) {
+        emptyMap()
     }
 
     private fun initList() {
@@ -96,8 +188,7 @@ class PerAppProxyActivity : BaseActivity() {
                 }
 
                 appsAll = apps
-                adapter = PerAppProxyAdapter(apps, viewModel)
-                binding.recyclerView.adapter = adapter
+                applyFilterSort()
 
             } catch (e: Exception) {
                 LogUtil.e(ANG_PACKAGE, "Error loading apps", e)

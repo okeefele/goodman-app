@@ -90,6 +90,18 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         binding.btnConnect.setOnClickListener { handleFabAction() }
         binding.btnRefreshSub.setOnClickListener { importConfigViaSub() }
         binding.btnSpeedtest.setOnClickListener { mainViewModel.testCurrentServerRealPing() }
+        binding.switchKillswitch.isChecked = MmkvManager.decodeSettingsBool("gm_killswitch", false)
+        binding.switchKillswitch.setOnCheckedChangeListener { _, isChecked ->
+            MmkvManager.encodeSettings("gm_killswitch", isChecked)
+            if (isChecked) {
+                toast("Включите «Постоянная VPN» и «Блокировать соединения без VPN»")
+                try {
+                    startActivity(android.content.Intent(android.provider.Settings.ACTION_VPN_SETTINGS))
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
         binding.fab.visibility = android.view.View.GONE
         binding.layoutTest.setOnClickListener { handleLayoutTestClick() }
 
