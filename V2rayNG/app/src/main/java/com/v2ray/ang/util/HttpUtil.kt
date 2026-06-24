@@ -162,6 +162,15 @@ object HttpUtil {
                 .header("User-agent", finalUserAgent)
                 .header("Connection", "close")
 
+            // GoodMan Net: на свой бэкенд (gdman.ink) шлём стабильный x-hwid — сервер
+            // выдаёт реальные конфиги клиентам с hwid (учёт лимита устройств как у Happ),
+            // без заголовка возвращается заглушка "работает только в Happ".
+            if (currentUrl?.contains("gdman.ink") == true) {
+                requestBuilder.header("x-hwid", Utils.getOrCreateHwid())
+                requestBuilder.header("x-device-os", "android")
+                requestBuilder.header("x-device-model", android.os.Build.MODEL ?: "")
+            }
+
             applyEmbeddedBasicAuthHeader(currentUrl, requestBuilder)
 
             if (request.httpPort != 0 && !request.proxyUsername.isNullOrBlank() && !request.proxyPassword.isNullOrBlank()) {

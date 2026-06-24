@@ -18,6 +18,7 @@ import androidx.core.net.toUri
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.AppConfig.LOOPBACK
 import com.v2ray.ang.BuildConfig
+import com.v2ray.ang.handler.MmkvManager
 import java.io.IOException
 import java.net.InetAddress
 import java.net.ServerSocket
@@ -422,6 +423,21 @@ object Utils {
             LogUtil.e(AppConfig.TAG, "Failed to generate device ID", e)
             ""
         }
+    }
+
+    /**
+     * Стабильный идентификатор устройства (hwid) для бэкенда GoodMan Net.
+     * Генерируется один раз и сохраняется в настройках (MMKV). Сервер использует
+     * заголовок x-hwid для учёта лимита устройств: клиенты, присылающие hwid,
+     * получают реальные конфиги (как Happ), без него — возвращается заглушка.
+     */
+    fun getOrCreateHwid(): String {
+        var id = MmkvManager.decodeSettingsString("pref_gm_hwid", "")
+        if (id.isNullOrEmpty()) {
+            id = UUID.randomUUID().toString().replace("-", "")
+            MmkvManager.encodeSettings("pref_gm_hwid", id)
+        }
+        return id
     }
 
     /**
