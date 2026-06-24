@@ -1,7 +1,7 @@
 {
   "stats":{},
   "log": {
-    "loglevel": "warning"
+    "loglevel": "debug"
   },
   "policy":{
       "levels": {
