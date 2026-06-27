@@ -54,6 +54,9 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     private lateinit var groupPagerAdapter: GroupPagerAdapter
     private var tabMediator: TabLayoutMediator? = null
 
+    /** Сырой account_id из /sinfo — нужен для прямой ссылки в личный кабинет. */
+    private var gmAccountId: String = ""
+
     private val requestVpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK) {
             startV2Ray()
@@ -84,7 +87,10 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         setupNavigationDrawer()
 
         binding.fab.setOnClickListener { handleFabAction() }
-        binding.btnLk.setOnClickListener { openUrl("https://gdman.ink") }
+        binding.btnLk.setOnClickListener {
+            val url = if (gmAccountId.isNotBlank()) "https://gdman.ink/?acc=$gmAccountId" else "https://gdman.ink"
+            openUrl(url)
+        }
         binding.btnTg.setOnClickListener { openUrl("https://t.me/goodmanNet_bot") }
         binding.btnEmptyClipboard.setOnClickListener { importClipboard() }
         binding.btnEmptyQr.setOnClickListener { importQRcode() }
@@ -365,6 +371,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                     return@launch
                 }
                 val pretty = info.account_id_pretty ?: info.account_id ?: ""
+                gmAccountId = (info.account_id ?: "").replace(" ", "").replace("-", "")
                 if (pretty.isNotBlank()) supportActionBar?.title = "ID: $pretty"
                 binding.tvSubAccount.text = "🆔 $pretty"
                 binding.tvSubExpiry.text =
