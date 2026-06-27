@@ -78,4 +78,9 @@
         <item name="colorPrimary">@color/color_fab_active</item>
     </style>
 
+    <!-- Уменьшенный заголовок тулбара, чтобы длинный ID влезал целиком -->
+    <style name="GmToolbarTitle" parent="@style/TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">15sp</item>
+    </style>
+
 </resources>

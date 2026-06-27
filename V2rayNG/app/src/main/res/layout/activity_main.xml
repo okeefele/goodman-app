@@ -18,7 +18,8 @@
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize" />
+                android:layout_height="?attr/actionBarSize"
+                app:titleTextAppearance="@style/GmToolbarTitle" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -125,9 +126,8 @@
                             android:layout_height="150dp"
                             android:background="@drawable/bg_connect_circle"
                             android:backgroundTint="@color/color_fab_inactive"
-                            android:text="⏻"
-                            android:textColor="#FFFFFF"
-                            android:textSize="46sp"
+                            android:foreground="@drawable/ic_power"
+                            android:foregroundGravity="center"
                             android:stateListAnimator="@null" />
 
                         <TextView
