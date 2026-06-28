@@ -271,12 +271,10 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
         if (isRunning) {
             binding.fab.setImageResource(R.drawable.ic_stop_24dp)
-            binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.connect_green))
-            val active = mainViewModel.serversCache.firstOrNull { it.guid == MmkvManager.getSelectServer() }
-            val name = active?.profile?.remarks?.takeIf { it.isNotBlank() }
-            binding.tvConnectStatus.text =
-                if (name != null) "✅ GoodMan Net — подключено\n$name" else "✅ GoodMan Net — подключено"
-            fetchExitGeo()   // реальный exit-IP + флаг страны (через VPN)
+            // Жёлтый + "проверка", пока fetchExitGeo не подтвердит реальную связь через туннель
+            binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.connect_yellow))
+            binding.tvConnectStatus.text = "Проверка соединения…"
+            fetchExitGeo()   // успех -> зелёный, провал -> красный
             binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_active))
             binding.fab.contentDescription = getString(R.string.action_stop_service)
             setTestState(getString(R.string.connection_connected))
@@ -300,25 +298,26 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 HttpUtil.getUrlContent(UrlContentRequest(url = "https://ipwho.is/", timeout = 6000))
             } catch (e: Exception) {
                 null
-            } ?: return@launch
-            try {
-                val o = org.json.JSONObject(resp)
-                if (!o.optBoolean("success", true)) return@launch
-                val ip = o.optString("ip")
-                val cc = o.optString("country_code")
-                val country = o.optString("country")
-                val flag = gmFlag(cc)
-                withContext(Dispatchers.Main) {
-                    if (mainViewModel.isRunning.value == true) {
-                        val nm = mainViewModel.serversCache.firstOrNull { it.guid == MmkvManager.getSelectServer() }?.profile?.remarks
-                        val sb = StringBuilder("✅ GoodMan Net — подключено")
-                        if (!nm.isNullOrBlank()) sb.append("\n").append(nm)
-                        sb.append("\n").append(flag).append(" ").append(country).append(" · ").append(ip)
-                        binding.tvConnectStatus.text = sb.toString()
-                    }
+            }
+            var ok = false
+            var flag = "🌍"
+            if (resp != null) {
+                try {
+                    val o = org.json.JSONObject(resp)
+                    if (o.optBoolean("success", true)) { ok = true; flag = gmFlag(o.optString("country_code")) }
+                } catch (e: Exception) { ok = false }
+            }
+            val okFinal = ok; val flagFinal = flag
+            withContext(Dispatchers.Main) {
+                if (mainViewModel.isRunning.value != true) return@withContext
+                val nm = mainViewModel.serversCache.firstOrNull { it.guid == MmkvManager.getSelectServer() }?.profile?.remarks ?: "GoodMan Net"
+                if (okFinal) {
+                    binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.connect_green))
+                    binding.tvConnectStatus.text = "✅ $nm — подключено  $flagFinal"
+                } else {
+                    binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.connect_red))
+                    binding.tvConnectStatus.text = "⚠️ Нет интернета через VPN"
                 }
-            } catch (e: Exception) {
-                // оставляем имя сервера, если гео не получили
             }
         }
     }
