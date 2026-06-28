@@ -179,7 +179,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         val targetIndex = groups.indexOfFirst { it.id == mainViewModel.subscriptionId }.takeIf { it >= 0 } ?: (groups.size - 1)
         binding.viewPager.setCurrentItem(targetIndex, false)
 
-        binding.tabGroup.isVisible = groups.size > 1
+        binding.tabGroup.isVisible = false
         refreshGroupTabTitles(true)
     }
 
@@ -203,11 +203,22 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     }
 
     private fun handleFabAction() {
-        applyRunningState(isLoading = true, isRunning = false)
-
         if (mainViewModel.isRunning.value == true) {
+            applyRunningState(isLoading = true, isRunning = false)
             CoreServiceManager.stopVService(this)
-        } else if (SettingsManager.isVpnMode()) {
+            return
+        }
+        if (MmkvManager.getSelectServer().isNullOrEmpty()) {
+            val first = mainViewModel.serversCache.firstOrNull()?.guid
+            if (first.isNullOrEmpty()) {
+                toast(R.string.title_file_chooser)
+                applyRunningState(isLoading = false, isRunning = false)
+                return
+            }
+            MmkvManager.setSelectServer(first)
+        }
+        applyRunningState(isLoading = true, isRunning = false)
+        if (SettingsManager.isVpnMode()) {
             val intent = VpnService.prepare(this)
             if (intent == null) {
                 startV2Ray()
