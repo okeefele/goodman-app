@@ -92,6 +92,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             openUrl(url)
         }
         binding.btnTg.setOnClickListener { openUrl("https://t.me/goodmanNet_bot") }
+        binding.layoutTopButtons.isVisible = false
         binding.btnEmptyClipboard.setOnClickListener { importClipboard() }
         binding.btnEmptyQr.setOnClickListener { importQRcode() }
         binding.btnConnect.setOnClickListener { handleFabAction() }
@@ -124,6 +125,10 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         )
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
+        // Гамбургер -> шестерёнка, открывает то же боковое меню
+        toggle.isDrawerIndicatorEnabled = false
+        binding.toolbar.setNavigationIcon(R.drawable.ic_settings_24dp)
+        binding.toolbar.setNavigationOnClickListener { binding.drawerLayout.openDrawer(GravityCompat.START) }
         binding.navView.setNavigationItemSelectedListener(this)
         binding.navView.menu.findItem(R.id.sub_setting)?.isVisible = false
         binding.navView.menu.findItem(R.id.routing_setting)?.isVisible = false
@@ -896,6 +901,8 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             R.id.check_for_update -> startActivity(Intent(this, CheckUpdateActivity::class.java))
             R.id.backup_restore -> requestActivityLauncher.launch(Intent(this, BackupActivity::class.java))
             R.id.about -> startActivity(Intent(this, AboutActivity::class.java))
+            R.id.lk_cabinet -> openUrl(if (gmAccountId.isNotBlank()) "https://gdman.ink/?acc=$gmAccountId" else "https://gdman.ink")
+            R.id.tg_bot -> openUrl("https://t.me/goodmanNet_bot")
         }
 
         binding.drawerLayout.closeDrawer(GravityCompat.START)

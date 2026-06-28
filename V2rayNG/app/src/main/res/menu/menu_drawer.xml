@@ -3,6 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
+    <group android:id="@+id/group_account">
+        <item
+            android:id="@+id/lk_cabinet"
+            android:icon="@drawable/ic_about_24dp"
+            android:title="Личный кабинет" />
+        <item
+            android:id="@+id/tg_bot"
+            android:icon="@drawable/ic_promotion_24dp"
+            android:title="Telegram" />
+    </group>
+
     <group android:id="@+id/group_main">
         <item
             android:id="@+id/sub_setting"

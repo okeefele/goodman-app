@@ -41,7 +41,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:padding="8dp">
+                        android:padding="8dp"
+                        android:id="@+id/layout_top_buttons">
                         <Button
                             android:id="@+id/btn_lk"
                             android:layout_width="0dp"
