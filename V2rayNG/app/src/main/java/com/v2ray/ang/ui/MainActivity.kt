@@ -422,7 +422,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             binding.layoutEmpty.visibility = if (empty) android.view.View.VISIBLE else android.view.View.GONE
             binding.layoutConnect.visibility = if (empty) android.view.View.GONE else android.view.View.VISIBLE
             binding.fab.visibility = android.view.View.GONE
-            binding.tabGroup.visibility = if (empty) android.view.View.GONE else android.view.View.VISIBLE
+            binding.tabGroup.visibility = android.view.View.GONE
             binding.viewPager.visibility = if (empty) android.view.View.GONE else android.view.View.VISIBLE
             binding.layoutTest.visibility = if (empty) android.view.View.GONE else android.view.View.VISIBLE
             invalidateOptionsMenu()

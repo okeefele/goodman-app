@@ -57,4 +57,5 @@
     <color name="connect_yellow">#FFB300</color>
     <color name="connect_green">#00C853</color>
     <color name="connect_red">#E53935</color>
+    <color name="gm_selected_row">#338D6E63</color>
 </resources>
