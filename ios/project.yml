@@ -2,7 +2,7 @@ name: GoodManNet
 options:
   bundleIdPrefix: ink.gdman
   deploymentTarget:
-    iOS: "15.0"
+    iOS: "16.0"
   createIntermediateGroups: true
 targets:
   GoodManNet:
