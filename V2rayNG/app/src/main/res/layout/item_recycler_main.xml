@@ -19,9 +19,9 @@
         android:nextFocusRight="@+id/layout_share"
         android:orientation="horizontal"
         android:paddingStart="@dimen/padding_spacing_dp4"
-        android:paddingTop="2dp"
+        android:paddingTop="0dp"
         android:paddingEnd="@dimen/padding_spacing_dp4"
-        android:paddingBottom="2dp">
+        android:paddingBottom="0dp">
 
         <LinearLayout
             android:id="@+id/layout_indicator"
@@ -64,7 +64,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:paddingTop="@dimen/padding_spacing_dp8">
+                            android:paddingTop="2dp">
 
                             <androidx.constraintlayout.widget.ConstraintLayout
                                 android:id="@+id/layout_subscription"
@@ -190,8 +190,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingStart="@dimen/padding_spacing_dp8"
-                android:paddingTop="@dimen/padding_spacing_dp8"
-                android:paddingEnd="@dimen/padding_spacing_dp8">
+                android:paddingTop="2dp"
+                android:paddingEnd="@dimen/padding_spacing_dp8"
+                android:paddingBottom="2dp">
 
                 <TextView
                     android:id="@+id/tv_type"
@@ -202,6 +203,7 @@
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"
                     android:textColor="@color/colorConfigType"
                     android:textSize="11sp"
+                    android:visibility="gone"
                     tools:text="VLESS" />
 
                 <TextView

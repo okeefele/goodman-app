@@ -76,37 +76,25 @@ class PerAppProxyActivity : BaseActivity() {
         }
         binding.switchPerAppProxy.isChecked = MmkvManager.decodeSettingsBool(AppConfig.PREF_PER_APP_PROXY, false)
 
-        binding.switchBypassApps.setOnCheckedChangeListener { _, isChecked ->
-            MmkvManager.encodeSettings(AppConfig.PREF_BYPASS_APPS, isChecked)
-        }
-        binding.switchBypassApps.isChecked = MmkvManager.decodeSettingsBool(AppConfig.PREF_BYPASS_APPS, false)
-
-        binding.layoutSwitchBypassAppsTips.setOnClickListener {
-            Toasty.info(this, R.string.summary_pref_per_app_proxy, Toast.LENGTH_LONG, true).show()
-        }
+        // Один ползунок: режим «обход» всегда включён — выбранные приложения идут МИМО VPN
+        MmkvManager.encodeSettings(AppConfig.PREF_BYPASS_APPS, true)
 
         binding.switchShowSystem.setOnCheckedChangeListener { _, _ -> applyFilterSort() }
 
         binding.btnPresetRu.setOnClickListener {
             binding.switchPerAppProxy.isChecked = true   // включаем per-app
-            binding.switchBypassApps.isChecked = true    // режим «обход» (выбранные мимо VPN)
             viewModel.addAll(ruPreset)
             toast("RU-приложения добавлены в обход VPN")
             applyFilterSort()
         }
 
         binding.btnSortUsage.setOnClickListener {
-            if (hasUsageAccess()) {
-                sortByUsage = true
-                applyFilterSort()
-            } else {
-                toast("Разрешите доступ к статистике использования и повторите")
-                try {
-                    startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-                } catch (e: Exception) {
-                    LogUtil.e(ANG_PACKAGE, "usage access settings", e)
-                }
+            // Сортировка прямо в этом окне, без перехода в системные настройки
+            sortByUsage = true
+            if (!hasUsageAccess()) {
+                toast("Для сортировки по частоте включите «Доступ к статистике» в настройках Android")
             }
+            applyFilterSort()
         }
     }
 
@@ -318,7 +306,7 @@ class PerAppProxyActivity : BaseActivity() {
     }
 
     private fun exportProxyApp() {
-        var lst = binding.switchBypassApps.isChecked.toString()
+        var lst = "true"   // режим обхода всегда включён
 
         viewModel.getAll().forEach { pkg ->
             lst = lst + System.lineSeparator() + pkg
@@ -344,7 +332,7 @@ class PerAppProxyActivity : BaseActivity() {
 
             viewModel.clear()
 
-            if (binding.switchBypassApps.isChecked) {
+            if (true) {   // режим обхода всегда включён — выбранные идут мимо VPN
                 adapter?.let { adapter ->
                     adapter.apps.forEach { app ->
                         val packageName = app.packageName

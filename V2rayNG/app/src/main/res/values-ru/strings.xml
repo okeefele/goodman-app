@@ -150,8 +150,8 @@
     <string name="msg_downloading_content">Загрузка данных</string>
     <string name="menu_item_export_proxy_app">Экспорт в буфер обмена</string>
     <string name="menu_item_import_proxy_app">Импорт из буфера обмена</string>
-    <string name="per_app_proxy_settings">Выбор приложений</string>
-    <string name="per_app_proxy_settings_enable">Использовать выбор приложений</string>
+    <string name="per_app_proxy_settings">Приложения мимо ВПН</string>
+    <string name="per_app_proxy_settings_enable">Включить</string>
     <string name="app_picker_unknown_app">Неизвестное приложение (неопознанный UID)</string>
 
     <!-- Preferences -->
@@ -290,7 +290,7 @@
     <string name="title_pref_hev_tunnel_loglevel">Подробность журнала HevTun</string>
     <string name="title_pref_hev_tunnel_rw_timeout">Ожидание чтения/записи HevTun (секунд, по умолчанию TCP,UDP 300,60)</string>
 
-    <string name="title_logcat">Журнал</string>
+    <string name="title_logcat">Логи событий</string>
     <string name="logcat_copy">Копировать</string>
     <string name="logcat_clear">Очистить</string>
     <string name="logcat_share">Поделиться журналом</string>

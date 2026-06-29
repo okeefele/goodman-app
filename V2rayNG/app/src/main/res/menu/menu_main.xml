@@ -2,22 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/add_config"
-        android:icon="@drawable/ic_add_24dp"
-        android:iconTint="@color/color_fab_active"
-        android:title="@string/menu_item_add_config"
-        app:showAsAction="always">
-        <menu>
-            <item
-                android:id="@+id/import_qrcode"
-                android:title="@string/menu_item_import_config_qrcode"
-                app:showAsAction="never" />
-            <item
-                android:id="@+id/import_clipboard"
-                android:title="@string/menu_item_import_config_clipboard"
-                app:showAsAction="never" />
-        </menu>
-    </item>
+        android:id="@+id/import_qrcode"
+        android:title="VPN из QR"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/import_clipboard"
+        android:title="VPN из буфера обмена"
+        app:showAsAction="never" />
     <item
         android:id="@+id/service_restart"
         android:title="@string/title_service_restart"

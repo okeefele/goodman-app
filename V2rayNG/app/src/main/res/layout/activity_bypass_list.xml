@@ -12,80 +12,27 @@
         android:id="@+id/header_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/padding_spacing_dp16">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="4dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_weight="1"
+            android:text="Выбранные приложения идут МИМО VPN — банки и госуслуги видят ваш РФ-IP"
+            android:textSize="12sp"
+            android:paddingEnd="12dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_per_app_proxy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:theme="@style/BrandedSwitch" />
 
-                <LinearLayout
-                    android:id="@+id/container_per_app_proxy"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/switch_per_app_proxy"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:maxLines="2"
-                        android:text="@string/per_app_proxy_settings_enable"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                        app:theme="@style/BrandedSwitch" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/container_bypass_apps"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/switch_bypass_apps"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/switch_bypass_apps_mode"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                        app:theme="@style/BrandedSwitch" />
-
-                    <LinearLayout
-                        android:id="@+id/layout_switch_bypass_apps_tips"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:clickable="true"
-                        android:contentDescription="@string/switch_bypass_apps_mode"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:padding="@dimen/padding_spacing_dp8">
-
-                        <ImageView
-                            android:layout_width="@dimen/image_size_dp24"
-                            android:layout_height="@dimen/image_size_dp24"
-                            android:importantForAccessibility="no"
-                            app:srcCompat="@drawable/ic_about_24dp" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
-            </LinearLayout>
-
-
-        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -95,13 +42,6 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:paddingBottom="8dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Выбранные приложения идут МИМО VPN — банки и госуслуги видят ваш РФ-IP"
-            android:textSize="12sp"
-            android:paddingBottom="6dp" />
 
         <LinearLayout
             android:layout_width="match_parent"

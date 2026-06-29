@@ -63,7 +63,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:indeterminate="true"
-                        android:visibility="invisible"
+                        android:visibility="gone"
                         app:indicatorColor="@color/color_fab_active" />
 
                     <com.google.android.material.tabs.TabLayout
@@ -109,9 +109,20 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:paddingTop="20dp"
-                        android:paddingBottom="20dp"
+                        android:paddingTop="0dp"
+                        android:paddingBottom="6dp"
                         android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/tv_ping_status"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:gravity="center"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/color_fab_active"
+                            android:visibility="gone" />
 
                         <Button
                             android:id="@+id/btn_connect"
@@ -127,17 +138,17 @@
                             android:id="@+id/tv_connect_status"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
+                            android:layout_marginTop="10dp"
                             android:gravity="center"
                             android:paddingStart="24dp"
                             android:paddingEnd="24dp"
                             android:textSize="14sp"
                             android:textStyle="bold"
-                            android:text="Чтобы подключиться, нажмите на кнопку.
-Сейчас отключено от сети" />
+                            android:text="Чтобы подключиться, нажмите на кнопку" />
 
+                        <!-- Один ряд: Приложения мимо VPN | Обновить | Скорость -->
                         <LinearLayout
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:orientation="horizontal"
@@ -146,78 +157,46 @@
                             <Button
                                 android:id="@+id/btn_refresh_sub"
                                 style="?attr/borderlessButtonStyle"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
                                 android:layout_height="wrap_content"
+                                android:minHeight="0dp"
+                                android:lines="1"
                                 android:text="🔄 Обновить"
                                 android:textColor="@color/color_fab_active"
-                                android:textSize="14sp" />
+                                android:textSize="12sp" />
+
+                            <Button
+                                android:id="@+id/btn_per_app"
+                                style="?attr/borderlessButtonStyle"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:minHeight="0dp"
+                                android:paddingTop="4dp"
+                                android:paddingBottom="4dp"
+                                android:lines="1"
+                                android:text="📱 Мимо VPN"
+                                android:textColor="@color/color_fab_active"
+                                android:textSize="12sp" />
 
                             <Button
                                 android:id="@+id/btn_speedtest"
                                 style="?attr/borderlessButtonStyle"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
                                 android:layout_height="wrap_content"
+                                android:minHeight="0dp"
+                                android:lines="1"
                                 android:text="📊 Скорость"
                                 android:textColor="@color/color_fab_active"
-                                android:textSize="14sp" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:id="@+id/layout_subinfo"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="14dp"
-                            android:layout_marginStart="24dp"
-                            android:layout_marginEnd="24dp"
-                            android:orientation="vertical"
-                            android:gravity="center_horizontal"
-                            android:background="@drawable/bg_subinfo"
-                            android:padding="14dp"
-                            android:visibility="gone">
-
-                            <TextView
-                                android:id="@+id/tv_sub_account"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="13sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/tv_sub_expiry"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:textSize="13sp" />
-
-                            <TextView
-                                android:id="@+id/tv_sub_devices"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:textSize="13sp" />
-
-                            <TextView
-                                android:id="@+id/tv_sub_plus"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:textSize="13sp" />
-
-                            <TextView
-                                android:id="@+id/tv_sub_note"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:gravity="center"
-                                android:text="ℹ️ Трафик расходуется только на Plus (белые списки)"
-                                android:textSize="11sp"
-                                android:textColor="@color/color_fab_inactive" />
+                                android:textSize="12sp" />
                         </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
+                            android:layout_marginTop="0dp"
                             android:orientation="horizontal"
                             android:gravity="center">
 
@@ -232,6 +211,60 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp" />
+                        </LinearLayout>
+
+                        <!-- Информация о подписке — над списком серверов -->
+                        <LinearLayout
+                            android:id="@+id/layout_subinfo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal"
+                            android:background="@drawable/bg_subinfo"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:paddingTop="10dp"
+                            android:paddingBottom="10dp"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:id="@+id/tv_sub_account"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_sub_expiry"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tv_sub_devices"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tv_sub_plus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tv_sub_note"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:gravity="center"
+                                android:text="ℹ️ Трафик расходуется только на Plus (белые списки)"
+                                android:textSize="11sp"
+                                android:textColor="@color/color_fab_inactive" />
                         </LinearLayout>
                     </LinearLayout>
 

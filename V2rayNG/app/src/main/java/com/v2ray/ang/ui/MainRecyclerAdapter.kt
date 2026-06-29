@@ -83,7 +83,7 @@ class MainRecyclerAdapter(
             //subscription remarks
             val subRemarks = getSubscriptionRemarks(profile)
             holder.itemMainBinding.tvSubscription.text = subRemarks
-            holder.itemMainBinding.layoutSubscription.visibility = if (subRemarks.isEmpty()) View.GONE else View.VISIBLE
+            holder.itemMainBinding.layoutSubscription.visibility = View.GONE   // компактные строки серверов (без кружка-индикатора)
 
             //иконки share/edit/remove убраны со строк сервера
             holder.itemMainBinding.layoutShare.visibility = View.GONE

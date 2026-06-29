@@ -641,6 +641,8 @@ object AngConfigManager {
         val subItem = SubscriptionItem()
         subItem.remarks = uri.fragment ?: "import sub"
         subItem.url = url
+        subItem.autoUpdate = true        // авто-обновление подписки включено
+        subItem.updateInterval = 720     // каждые 12 часов (как в Happ)
         MmkvManager.encodeSubscription("", subItem)
         return 1
     }

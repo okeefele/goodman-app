@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -76,7 +77,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         super.onCreate(savedInstanceState)
         SettingsManager.ensureRussiaBypass(this)   // RU-домены/IP → напрямую (обход РФ)
         setContentView(binding.root)
-        setupToolbar(binding.toolbar, false, getString(R.string.app_name))
+        setupToolbar(binding.toolbar, false, "")   // без заголовка справа от шестерёнки
 
         // setup viewpager and tablayout
         groupPagerAdapter = GroupPagerAdapter(this, emptyList())
@@ -97,7 +98,16 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         binding.btnEmptyQr.setOnClickListener { importQRcode() }
         binding.btnConnect.setOnClickListener { handleFabAction() }
         binding.btnRefreshSub.setOnClickListener { importConfigViaSub() }
-        binding.btnSpeedtest.setOnClickListener { mainViewModel.testCurrentServerRealPing() }
+        binding.btnSpeedtest.setOnClickListener {
+            binding.tvPingStatus.visibility = android.view.View.VISIBLE
+            if (mainViewModel.isRunning.value == true) {
+                binding.tvPingStatus.text = "⏳ Проверяю скорость текущего сервера…"
+                mainViewModel.testCurrentServerRealPing()
+            } else {
+                binding.tvPingStatus.text = "⚠️ Сначала подключитесь, потом проверяйте скорость"
+            }
+        }
+        binding.btnPerApp.setOnClickListener { requestActivityLauncher.launch(Intent(this, PerAppProxyActivity::class.java)) }
         binding.switchKillswitch.isChecked = MmkvManager.decodeSettingsBool("gm_killswitch", false)
         binding.switchKillswitch.setOnCheckedChangeListener { _, isChecked ->
             MmkvManager.encodeSettings("gm_killswitch", isChecked)
@@ -108,6 +118,15 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
         setupGroupTab()
         setupViewModel()
+        // Включаем авто-обновление всех подписок каждые 12 ч (как в Happ)
+        MmkvManager.decodeSubscriptions().forEach {
+            val s = it.subscription
+            if (!s.autoUpdate || s.updateInterval != 720L) {
+                s.autoUpdate = true
+                s.updateInterval = 720
+                MmkvManager.encodeSubscription(it.guid, s)
+            }
+        }
         SubscriptionUpdater.sync()
         mainViewModel.reloadServerList(); updateEmptyState()
 
@@ -136,8 +155,20 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         binding.navView.menu.findItem(R.id.settings)?.isVisible = false
         binding.navView.menu.findItem(R.id.promotion)?.isVisible = false
         binding.navView.menu.findItem(R.id.backup_restore)?.isVisible = false
-        binding.navView.menu.findItem(R.id.about)?.isVisible = false
         binding.navView.menu.findItem(R.id.placeholder)?.isVisible = false
+        binding.navView.menu.findItem(R.id.kill_switch)?.isVisible = false   // дублирует переключатель на главном экране
+        binding.navView.menu.findItem(R.id.per_app_proxy_settings)?.isVisible = false   // есть кнопка «Мимо VPN» на главном экране
+
+        // Тёмная тема — ползунок прямо в меню
+        (binding.navView.menu.findItem(R.id.theme_toggle)?.actionView as? androidx.appcompat.widget.SwitchCompat)?.apply {
+            isChecked = MmkvManager.decodeSettingsString(AppConfig.PREF_UI_MODE_NIGHT, "0") == "2"
+            setOnCheckedChangeListener { _, checked ->
+                MmkvManager.encodeSettings(AppConfig.PREF_UI_MODE_NIGHT, if (checked) "2" else "1")
+                AppCompatDelegate.setDefaultNightMode(
+                    if (checked) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+                )
+            }
+        }
 
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -154,7 +185,14 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     }
 
     private fun setupViewModel() {
-        mainViewModel.updateTestResultAction.observe(this) { setTestState(it) }
+        mainViewModel.updateTestResultAction.observe(this) {
+            setTestState(it)
+            if (binding.tvPingStatus.isVisible) {
+                binding.tvPingStatus.text =
+                    if (it.isNullOrBlank() || it.contains("-1")) "❌ Сервер не отвечает (нет пинга)"
+                    else "⚡ Пинг: $it"
+            }
+        }
         mainViewModel.isRunning.observe(this) { isRunning ->
             applyRunningState(false, isRunning)
         }
@@ -287,7 +325,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         } else {
             binding.fab.setImageResource(R.drawable.ic_play_24dp)
             binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_inactive))
-            binding.tvConnectStatus.text = "Чтобы подключиться, нажмите на кнопку.\nСейчас отключено от сети"
+            binding.tvConnectStatus.text = "Чтобы подключиться, нажмите на кнопку"
             binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_inactive))
             binding.fab.contentDescription = getString(R.string.tasker_start_service)
             setTestState(getString(R.string.connection_not_connected))
@@ -316,9 +354,11 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             withContext(Dispatchers.Main) {
                 if (mainViewModel.isRunning.value != true) return@withContext
                 val nm = mainViewModel.serversCache.firstOrNull { it.guid == MmkvManager.getSelectServer() }?.profile?.remarks ?: "GoodMan Net"
+                val (nmFlag, nmClean) = splitLeadingFlag(nm)
                 if (okFinal) {
                     binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.connect_green))
-                    binding.tvConnectStatus.text = "✅ $nm — подключено  $flagFinal"
+                    // флаг сервера — справа от текста; гео-флаг exit-IP не показываем
+                    binding.tvConnectStatus.text = if (nmFlag.isNotEmpty()) "✅ $nmClean — подключено  $nmFlag" else "✅ $nmClean — подключено"
                 } else {
                     binding.btnConnect.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.connect_red))
                     binding.tvConnectStatus.text = "⚠️ Нет интернета через VPN"
@@ -332,6 +372,45 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         if (c.length != 2 || !c.all { it in 'A'..'Z' }) return "🌍"
         val base = 0x1F1E6
         return String(Character.toChars(base + (c[0] - 'A'))) + String(Character.toChars(base + (c[1] - 'A')))
+    }
+
+    /** Отделяет ведущий эмодзи-флаг от названия: "🇩🇪 GoodMan" -> ("🇩🇪","GoodMan"). */
+    private fun splitLeadingFlag(s: String): Pair<String, String> {
+        val t = s.trim()
+        val cps = t.codePoints().toArray()
+        var i = 0
+        val flag = StringBuilder()
+        while (i < cps.size) {
+            val cp = cps[i]
+            val isEmoji = cp in 0x1F1E6..0x1F1FF ||   // региональные индикаторы (флаги)
+                cp in 0x1F300..0x1FAFF ||             // прочие эмодзи
+                cp in 0x2600..0x27BF ||
+                cp == 0xFE0F || cp == 0x200D
+            if (isEmoji) { flag.appendCodePoint(cp); i++ } else break
+        }
+        if (flag.isEmpty()) return "" to t
+        val rest = String(cps, i, cps.size - i).trim()
+        return flag.toString() to rest
+    }
+
+    /** Окно «О приложении» с краткой информацией. */
+    private fun showAboutDialog() {
+        val ver = try {
+            packageManager.getPackageInfo(packageName, 0).versionName
+        } catch (e: Exception) { "" }
+        AlertDialog.Builder(this)
+            .setTitle("GoodMan Net")
+            .setMessage(
+                "Быстрый VPN на протоколе VLESS / Reality.\n\n" +
+                    "Версия: $ver\n" +
+                    "Сайт: gdman.ink\n" +
+                    "Telegram: @goodmanNet_bot\n\n" +
+                    "«Приложения мимо VPN» — выбранные приложения работают в обход VPN (банки, госуслуги видят ваш РФ-IP).\n" +
+                    "Kill switch блокирует интернет без VPN.\n\n" +
+                    "© GoodMan Net"
+            )
+            .setPositiveButton("Закрыть", null)
+            .show()
     }
 
     private fun showKillSwitchDialog() {
@@ -387,7 +466,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 }
                 val pretty = info.account_id_pretty ?: info.account_id ?: ""
                 gmAccountId = (info.account_id ?: "").replace(" ", "").replace("-", "")
-                if (pretty.isNotBlank()) supportActionBar?.title = "ID: $pretty"
+                // ID показываем в карточке подписки, а не в шапке (в шапке остаётся название GoodMan Net)
                 binding.tvSubAccount.text = "🆔 $pretty"
                 binding.tvSubExpiry.text =
                     if (info.active && !info.expires_at.isNullOrBlank()) "📅 Подписка до ${gmFmtDate(info.expires_at)}"
@@ -428,7 +507,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             binding.fab.visibility = android.view.View.GONE
             binding.tabGroup.visibility = android.view.View.GONE
             binding.viewPager.visibility = if (empty) android.view.View.GONE else android.view.View.VISIBLE
-            binding.layoutTest.visibility = if (empty) android.view.View.GONE else android.view.View.VISIBLE
+            binding.layoutTest.visibility = android.view.View.GONE
             invalidateOptionsMenu()
         }
     }
@@ -436,7 +515,8 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         val hasConfig = mainViewModel.serversCache.isNotEmpty()
-        menu.findItem(R.id.add_config)?.isVisible = hasConfig
+        menu.findItem(R.id.import_qrcode)?.isVisible = hasConfig
+        menu.findItem(R.id.import_clipboard)?.isVisible = hasConfig
         menu.findItem(R.id.service_restart)?.isVisible = hasConfig
         menu.findItem(R.id.del_all_config)?.isVisible = hasConfig
 
@@ -898,9 +978,10 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             R.id.settings -> requestActivityLauncher.launch(Intent(this, SettingsActivity::class.java))
             R.id.promotion -> Utils.openUri(this, "${Utils.decode(AppConfig.APP_PROMOTION_URL)}?t=${System.currentTimeMillis()}")
             R.id.logcat -> startActivity(Intent(this, LogcatActivity::class.java))
+            R.id.theme_toggle -> (item.actionView as? androidx.appcompat.widget.SwitchCompat)?.let { it.isChecked = !it.isChecked }
             R.id.check_for_update -> startActivity(Intent(this, CheckUpdateActivity::class.java))
             R.id.backup_restore -> requestActivityLauncher.launch(Intent(this, BackupActivity::class.java))
-            R.id.about -> startActivity(Intent(this, AboutActivity::class.java))
+            R.id.about -> showAboutDialog()
             R.id.lk_cabinet -> openUrl(if (gmAccountId.isNotBlank()) "https://gdman.ink/?acc=$gmAccountId" else "https://gdman.ink")
             R.id.tg_bot -> openUrl("https://t.me/goodmanNet_bot")
         }
