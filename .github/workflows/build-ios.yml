@@ -1,0 +1,49 @@
+name: Build iOS (simulator)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/build-ios.yml'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Build for iOS Simulator
+        working-directory: ios
+        run: |
+          xcodebuild \
+            -project GoodManNet.xcodeproj \
+            -scheme GoodManNet \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Zip .app for Appetize
+        working-directory: ios
+        run: |
+          APP=$(find build/Build/Products -maxdepth 3 -name 'GoodManNet.app' | head -1)
+          echo "Found app: $APP"
+          cd "$(dirname "$APP")"
+          zip -r -y "$GITHUB_WORKSPACE/GoodManNet-sim.zip" "GoodManNet.app"
+          ls -la "$GITHUB_WORKSPACE/GoodManNet-sim.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GoodManNet-ios-sim
+          path: GoodManNet-sim.zip
+          if-no-files-found: error
