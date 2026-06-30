@@ -108,11 +108,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             }
         }
         binding.btnPerApp.setOnClickListener { requestActivityLauncher.launch(Intent(this, PerAppProxyActivity::class.java)) }
-        binding.switchKillswitch.isChecked = MmkvManager.decodeSettingsBool("gm_killswitch", false)
-        binding.switchKillswitch.setOnCheckedChangeListener { _, isChecked ->
-            MmkvManager.encodeSettings("gm_killswitch", isChecked)
-            if (isChecked) showKillSwitchDialog()
-        }
+        binding.btnKillswitch.setOnClickListener { showKillSwitchDialog() }
         binding.fab.visibility = android.view.View.GONE
         binding.layoutTest.setOnClickListener { handleLayoutTestClick() }
 

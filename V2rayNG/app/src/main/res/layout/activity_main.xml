@@ -146,71 +146,80 @@
                             android:textStyle="bold"
                             android:text="Чтобы подключиться, нажмите на кнопку" />
 
-                        <!-- Один ряд: Приложения мимо VPN | Обновить | Скорость -->
+                        <!-- Один ряд: Обновить | Мимо VPN | Скорость | Kill switch -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:orientation="horizontal"
-                            android:gravity="center">
-
-                            <Button
-                                android:id="@+id/btn_refresh_sub"
-                                style="?attr/borderlessButtonStyle"
-                                android:layout_width="0dp"
-                                android:layout_weight="1"
-                                android:layout_height="wrap_content"
-                                android:minHeight="0dp"
-                                android:lines="1"
-                                android:text="🔄 Обновить"
-                                android:textColor="@color/color_fab_active"
-                                android:textSize="12sp" />
-
-                            <Button
-                                android:id="@+id/btn_per_app"
-                                style="?attr/borderlessButtonStyle"
-                                android:layout_width="0dp"
-                                android:layout_weight="1"
-                                android:layout_height="wrap_content"
-                                android:minHeight="0dp"
-                                android:paddingTop="4dp"
-                                android:paddingBottom="4dp"
-                                android:lines="1"
-                                android:text="📱 Мимо VPN"
-                                android:textColor="@color/color_fab_active"
-                                android:textSize="12sp" />
-
-                            <Button
-                                android:id="@+id/btn_speedtest"
-                                style="?attr/borderlessButtonStyle"
-                                android:layout_width="0dp"
-                                android:layout_weight="1"
-                                android:layout_height="wrap_content"
-                                android:minHeight="0dp"
-                                android:lines="1"
-                                android:text="📊 Скорость"
-                                android:textColor="@color/color_fab_active"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="0dp"
-                            android:orientation="horizontal"
-                            android:gravity="center">
+                            android:layout_marginTop="8dp"
+                            android:orientation="horizontal">
 
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:id="@+id/btn_refresh_sub"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
                                 android:layout_height="wrap_content"
-                                android:text="🛡 Kill switch (блокировать сеть без VPN)"
-                                android:textSize="13sp" />
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center"
+                                android:lines="1"
+                                android:paddingTop="8dp"
+                                android:paddingBottom="8dp"
+                                android:text="🔄 Обновить"
+                                android:textColor="@color/color_fab_active"
+                                android:textStyle="bold"
+                                android:textSize="11sp" />
 
-                            <androidx.appcompat.widget.SwitchCompat
-                                android:id="@+id/switch_killswitch"
-                                android:layout_width="wrap_content"
+                            <TextView
+                                android:id="@+id/btn_per_app"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp" />
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center"
+                                android:lines="1"
+                                android:paddingTop="8dp"
+                                android:paddingBottom="8dp"
+                                android:text="📱 Мимо VPN"
+                                android:textColor="@color/color_fab_active"
+                                android:textStyle="bold"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/btn_speedtest"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center"
+                                android:lines="1"
+                                android:paddingTop="8dp"
+                                android:paddingBottom="8dp"
+                                android:text="📊 Скорость"
+                                android:textColor="@color/color_fab_active"
+                                android:textStyle="bold"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/btn_killswitch"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center"
+                                android:lines="1"
+                                android:paddingTop="8dp"
+                                android:paddingBottom="8dp"
+                                android:text="🛡 Kill switch"
+                                android:textColor="@color/color_fab_active"
+                                android:textStyle="bold"
+                                android:textSize="11sp" />
                         </LinearLayout>
 
                         <!-- Информация о подписке — над списком серверов -->

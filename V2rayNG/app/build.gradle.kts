@@ -5,6 +5,7 @@ plugins {
 }
 
 android {
+    ndkVersion = "29.0.14206865"
     namespace = "com.v2ray.ang"
     compileSdk = 37
 
@@ -12,8 +13,8 @@ android {
         applicationId = "ink.gdman.app"
         minSdk = 24
         targetSdk = 37
-        versionCode = 743
-        versionName = "2.3.7"
+        versionCode = 745
+        versionName = "2.3.9"
         multiDexEnabled = true
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')

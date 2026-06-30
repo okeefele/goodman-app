@@ -58,7 +58,9 @@ class MainRecyclerAdapter(
             holder.itemView.setBackgroundColor(Color.TRANSPARENT)
 
             //Name address
-            holder.itemMainBinding.tvName.text = profile.remarks
+            val (gmFlag, gmName) = splitFlag(profile.remarks.replace("🇮🇷", "").trim())  // убираем флаг Ирана (🇮🇷)
+            holder.itemMainBinding.tvFlag.text = gmFlag
+            holder.itemMainBinding.tvName.text = gmName
             holder.itemMainBinding.tvStatistics.text = getAddress(profile)
             holder.itemMainBinding.tvStatistics.visibility = View.GONE
             holder.itemMainBinding.tvType.text = getProtocolDescription(profile)
@@ -120,6 +122,24 @@ class MainRecyclerAdapter(
             else
                 null
         return subRemarks?.toString() ?: ""
+    }
+
+    /** Отделяет ведущий эмодзи-флаг от имени сервера: "🇩🇪 GoodMan" -> ("🇩🇪","GoodMan"). */
+    private fun splitFlag(s: String): Pair<String, String> {
+        val t = s.trim()
+        val cps = t.codePoints().toArray()
+        var i = 0
+        val flag = StringBuilder()
+        while (i < cps.size) {
+            val cp = cps[i]
+            val isEmoji = cp in 0x1F1E6..0x1F1FF ||   // региональные индикаторы (флаги)
+                cp in 0x1F300..0x1FAFF ||             // прочие эмодзи
+                cp in 0x2600..0x27BF ||
+                cp == 0xFE0F || cp == 0x200D
+            if (isEmoji) { flag.appendCodePoint(cp); i++ } else break
+        }
+        if (flag.isEmpty()) return "" to t
+        return flag.toString() to String(cps, i, cps.size - i).trim()
     }
 
     private fun getProtocolDescription(profile: ProfileItem): String {
